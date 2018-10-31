@@ -122,15 +122,13 @@ String APwebPage2 =  "</th></tr></table>\n"
                      "</body></html>";
 String APwebstring = "";   // String to display
 
-// reemplazar con su API key,
-String apiKey = "xxxxxxxxxxxxxxxx";
 const char* servidor_thingspeak = "api.thingspeak.com";
 const char* prueba_conexion = "www.google.com.ar";
 long retardo = 0;
 
+// para implementar alarmas a través de twitter! (futura implementacion)
 String thingtweetAPIKey = "ESCDDHRH6KN0EIVR";
 
-//int blink = 0;
 int estado_led = 0;
 
 DHT dht(PIN_DHT, DHT11, 15);
@@ -483,7 +481,6 @@ void EEPROM_leer_todo( RedesWifi* red_actual )
   for( int i=0; i<=MEM_MAX_EEPROM; i++)
   {
     caracter = char(EEPROM.read(i));
-    //Serial.print(caracter);
     if( caracter == fin_eeprom ) break;
     if( caracter == sep_eeprom )
     {
@@ -699,7 +696,7 @@ int conviertoPor(float niv) {
   return quality;
 }
 /*
- * 
+ * Para parpadeo de led indicando nro de veces y tiempo de espera entre parpadeo
  */
 void parpadea(int veces, int tiempo) {
   int estado_led2 = 0;
