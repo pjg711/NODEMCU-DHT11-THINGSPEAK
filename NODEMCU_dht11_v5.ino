@@ -5,6 +5,9 @@
 #include <EEPROM.h>
 #include "DHT.h"
 #include <SimpleTimer.h>
+#include <AceButton.h>
+using namespace ace_button;
+
 
 #define AP_RESTART "esprestart"
 #define AP_CLEAREEPROM "cleareeprom"
@@ -22,6 +25,9 @@ IPAddress apIP(192, 168, 4, 1);
 IPAddress netMsk(255, 255, 255, 0);
 DNSServer dnsServer;
 ESP8266WebServer server(80);
+
+AceButton button(PIN_BOTON);
+void handleEvent(AceButton*, uint8_t, uint8_t);
 
 // caracteres para guardar en eeprom
 #define MEM_MAX_EEPROM 512
@@ -127,7 +133,7 @@ const char* prueba_conexion = "www.google.com.ar";
 long retardo = 0;
 
 // para implementar alarmas a través de twitter! (futura implementacion)
-String thingtweetAPIKey = "ESCDDHRH6KN0EIVR";
+String thingtweetAPIKey = "XXXXXXXXXXXXXXXXX";
 
 int estado_led = 0;
 
@@ -199,6 +205,8 @@ void setup() {
   Serial.print(F("Mediciones cada:"));
   Serial.print(tiempo_ms/60000);
   Serial.println(F(" minutos"));
+  //evento del boton
+  button.setEventHandler(handleEvent);
   // primera lectura y envio
   lecturaSensor();
 }
@@ -206,7 +214,8 @@ void setup() {
 void loop() {
   server.handleClient();
   timer.run();
-    
+  button.check();
+  
   estado_boton = digitalRead(PIN_BOTON);
   if( estado_boton == 1 ) {
     // boton presionado y borro la eeprom
@@ -435,7 +444,7 @@ String getAPlist() {
   return APstring;
 }
 /*
- * 
+ * estado de la conexion a internet
  */
 String estado_conexion(int conectado)
 {
@@ -588,7 +597,7 @@ void conecta() {
     server.on(restartcommand, handle_APrestart);
     server.on(cleareepromcommand, handle_clearAPeeprom);
     server.on("/info", []() {
-      webString = "<p class='dt'>Direccion IP Local: " + WiFi.localIP().toString() + "<br>ApiKey: " + apiKey + "</p>";
+      webString = "<p class='dt'>Direccion IP Local: " + WiFi.localIP().toString() + "<br>ApiKey: " + red_actual.api_key + "</p>";
       server.send(200, "text/html", webPage1 + webString + webPage2);
       delay(100);
     });
@@ -704,5 +713,21 @@ void parpadea(int veces, int tiempo) {
     int estado_led2 = !estado_led2;
     digitalWrite(LED_NODEMCU, estado_led2);
     delay(tiempo);
+  }
+}
+
+void handleEvent(AceButton* /* button */, uint8_t eventType,
+    uint8_t /* buttonState */ ) {
+  Serial.print(F("Evento boton:"));
+  Serial.println(eventType);
+  switch (eventType) {
+    case AceButton::kEventPressed:
+      digitalWrite(LED_BUILTIN, HIGH);
+      Serial.println("Boton presionado");
+      break;
+    case AceButton::kEventReleased:
+      digitalWrite(LED_BUILTIN, LOW);
+      Serial.println("Boton released");
+      break;
   }
 }
